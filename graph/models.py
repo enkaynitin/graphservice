@@ -14,7 +14,7 @@ class Graph(models.Model):
 
 
 class Node(models.Model):
-    graph = models.ManyToManyField(Graph, related_name='node')
+    graph = models.ManyToManyField(Graph, related_name='graphs')
     iid = models.CharField(max_length=50)
     title = models.CharField(max_length=50)
     position = models.ForeignKey('NodePosition', on_delete=models.CASCADE, related_name='node_position', null=True)

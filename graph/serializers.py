@@ -6,7 +6,7 @@ from rest_framework.parsers import JSONParser
 class NodePositionSerializer(serializers.ModelSerializer):
     class Meta:
         model = NodePosition
-        fields = '__all__'
+        fields = ('top', 'left', 'bottom', 'right')
 
 
 class NodeSerializer(serializers.ModelSerializer):
@@ -14,26 +14,26 @@ class NodeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Node
-        depth = 1
         fields = ('iid', 'title', 'position')
 
 
 class EdgeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Edge
-        depth = 1
-        fields = '__all__'
+        fields = ('source', 'destination')
 
 
 class GraphSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Graph   
-        fields = '__all__'
+    nodes = NodeSerializer(many=True)
+    edges = EdgeSerializer(many=True)
 
-    def create(self, request):
-        validated_data = request
-        node_data = validated_data.pop('nodes')
-        edge_data = validated_data.pop('edges')
+    class Meta:
+        model = Graph
+        fields = ('title', 'nodes', 'edges')
+
+    def create(self, validated_data):
+        node_data = validated_data.pop('node')
+        edge_data = validated_data.pop('edge')
 
         for node_data in node_data:
             position_data = node_data.pop('position')
