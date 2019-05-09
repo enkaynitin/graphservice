@@ -16,7 +16,7 @@ class EdgeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Edge
-        fields = ('source', 'target')
+        fields = ('source', 'target', 'weight')
 
 
 class GraphSerializer(serializers.ModelSerializer):
