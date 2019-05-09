@@ -35,11 +35,11 @@ class NodePosition(models.Model):
 
 class Edge(models.Model):
     graph = models.ManyToManyField(Graph, related_name='graph_edges')
-    source = models.ForeignKey(Node, on_delete=models.CASCADE, related_name='node_source')
-    destination = models.ForeignKey(Node, on_delete=models.CASCADE, related_name='node_destination')
+    source = models.ForeignKey(Node, on_delete=models.CASCADE, related_name='node_source', null=True)
+    target = models.ForeignKey(Node, on_delete=models.CASCADE, related_name='node_target', null=True)
     weight = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(1)])
 
     def __str__(self):
-        return "{} {} {}".format(self.source, self.destination, self.weight)
+        return "{} {} {}".format(self.source, self.target, self.weight)
 
 

@@ -20,7 +20,7 @@ class NodeSerializer(serializers.ModelSerializer):
 class EdgeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Edge
-        fields = ('source', 'destination')
+        fields = ('source', 'target')
 
 
 class GraphSerializer(serializers.ModelSerializer):
