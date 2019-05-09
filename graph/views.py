@@ -6,6 +6,9 @@ from rest_framework import generics
 # Create your views here.
 
 
+
+
+
 class GraphList(generics.ListCreateAPIView):
     queryset = Graph.objects.all()
     serializer_class = GraphSerializer
@@ -14,3 +17,5 @@ class GraphList(generics.ListCreateAPIView):
 class GraphDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Graph.objects.all()
     serializer_class = GraphSerializer
+
+

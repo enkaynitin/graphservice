@@ -6,35 +6,33 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 class Graph(models.Model):
     title = models.CharField(max_length=100)
-    nodes = models.ManyToManyField('Node', related_name='graphs')
-    edges = models.ManyToManyField('Edge', related_name='graphs')
 
     def __str__(self):
-        return "{} {} {}".format(self.title, self.nodes, self.edges)
+        return "{}".format(self.title)
 
 
 class Node(models.Model):
-    graph = models.ManyToManyField(Graph, related_name='graphs')
+    graph = models.ForeignKey(Graph, related_name='nodes', on_delete=models.CASCADE, null=True)
     iid = models.CharField(max_length=50)
     title = models.CharField(max_length=50)
-    position = models.ForeignKey('NodePosition', on_delete=models.CASCADE, related_name='node_position', null=True)
+    top = models.FloatField(null=True)
+    left = models.FloatField(null=True)
+    bottom = models.FloatField(null=True)
+    right = models.FloatField(null=True)
+
+    def position(self):
+        return {
+            'top': self.top,
+            'left': self.left,
+            'bottom': self.bottom,
+            'right': self.right
+        }
 
     def __str__(self):
-        return "{} {} {}".format(self.iid, self.title, self.position)
-
-
-class NodePosition(models.Model):
-    top = models.IntegerField()
-    left = models.IntegerField()
-    bottom = models.IntegerField()
-    right = models.IntegerField()
-
-    def __str__(self):
-        return "{} {} {} {}".format(self.top, self.left, self.bottom, self.right)
+        return "{} {}".format(self.iid, self.title)
 
 
 class Edge(models.Model):
-    graph = models.ManyToManyField(Graph, related_name='graph_edges')
     source = models.ForeignKey(Node, on_delete=models.CASCADE, related_name='node_source', null=True)
     target = models.ForeignKey(Node, on_delete=models.CASCADE, related_name='node_target', null=True)
     weight = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(1)])
