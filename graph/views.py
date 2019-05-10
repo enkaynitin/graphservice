@@ -1,9 +1,14 @@
 from django.shortcuts import render
 from rest_framework import  viewsets
-from .models import Graph, Node, Edge
-from .serializers import GraphSerializer, NodeSerializer, EdgeSerializer
+from .models import Graph, Node, Edge, File
+from .serializers import GraphSerializer, NodeSerializer, EdgeSerializer, FileSerializer
 from rest_framework import generics
 from django.shortcuts import get_object_or_404
+from rest_framework import views, viewsets
+from rest_framework.parsers import FileUploadParser
+from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework import status
 # Create your views here.
 
 
@@ -43,6 +48,20 @@ class WeaklyConnectedList(generics.ListAPIView):
     def get_queryset(self):
         graph = get_object_or_404(Graph, pk=self.kwargs['graph_pk'])
         return set([node for node in graph.nodes.all() if node.weakly_connected()])
+
+
+
+class FileView(views.APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, *args, **kwargs):
+        file_serializer = FileSerializer(data=request.data)
+        if file_serializer.is_valid():
+            file_serializer.save()
+            return Response(file_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 # def weakly_connected(request, graph_pk):

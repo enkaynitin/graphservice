@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Graph, Node,  Edge
+from .models import Graph, Node,  Edge, File
 from rest_framework.parsers import JSONParser
 
 
@@ -40,4 +40,8 @@ class GraphSerializer(serializers.ModelSerializer):
     #     return graph
 
 
+class FileSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = File
+        fields = ('file', 'timestamp', 'graph')
 

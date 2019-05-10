@@ -1,4 +1,5 @@
 from django.urls import path
+from django.conf.urls import url
 from rest_framework.urlpatterns import format_suffix_patterns
 from graph import views
 
@@ -10,7 +11,9 @@ urlpatterns = [
     path('nodes/<int:pk>/', views.NodeDetail.as_view()),
     path('edges/', views.EdgeList.as_view()),
     path('edges/<int:pk>/', views.EdgeDetail.as_view()),
-    path('graphs/<int:graph_pk>/weakly_connected/', views.WeaklyConnectedList.as_view())
+    path('graphs/<int:graph_pk>/weakly_connected/', views.WeaklyConnectedList.as_view()),
+    path('graphs/upload/', views.FileView.as_view())
+
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

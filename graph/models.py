@@ -56,10 +56,15 @@ class Edge(models.Model):
         return "{} {} {}".format(self.source, self.target, self.weight)
 
 
-
 class FindIsland(models.Model):
     nodes_to_traverse = models.ManyToManyField(Node, related_name='to_travers')
     traversed_nodes = models.ManyToManyField(Node, related_name='traversed')
 
 
+class File(models.Model):
+    graph = models.ForeignKey(Graph, on_delete=models.CASCADE)
+    file = models.FileField(blank=False, null=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
+    def create_node(self):
+        with self.file
