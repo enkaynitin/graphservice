@@ -63,8 +63,8 @@ class FindIsland(models.Model):
 
 class File(models.Model):
     graph = models.ForeignKey(Graph, on_delete=models.CASCADE)
-    file = models.FileField(blank=False, null=False)
+    file = models.FileField(upload_to='media', blank=False, null=False)
     timestamp = models.DateTimeField(auto_now_add=True)
 
-    def create_node(self):
-        with self.file
+
+

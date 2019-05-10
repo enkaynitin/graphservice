@@ -9,6 +9,8 @@ from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
+import os
+from graphservice.settings import ENV_PATH
 # Create your views here.
 
 
@@ -50,7 +52,6 @@ class WeaklyConnectedList(generics.ListAPIView):
         return set([node for node in graph.nodes.all() if node.weakly_connected()])
 
 
-
 class FileView(views.APIView):
     parser_classes = (MultiPartParser, FormParser)
 
@@ -58,17 +59,19 @@ class FileView(views.APIView):
         file_serializer = FileSerializer(data=request.data)
         if file_serializer.is_valid():
             file_serializer.save()
+            file_object = File.objects.last()
+            graph = file_object.graph
+            with open('/home/nk/Projects/mavenoid/graphservice/graphservice'+file_object.file.url, 'r') as f:
+                for line in f:
+                    l = line.replace("\n", "").split(',')
+                    Node.objects.create(graph=graph, iid=l[0], title=l[1],
+                                       top=float(l[2]), left=float(l[3]), bottom=float(l[4]), right=float(l[5]))
+                f.close()
+            print(File.objects.last().file.url)
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
-# def weakly_connected(request, graph_pk):
-#     print(request)
-#     graph = get_object_or_404(Graph, pk=graph_pk)
-#     nodes = graph.nodes.all()
-#     return set([node for node in nodes if node.weakly_connected()])
 
 
 
