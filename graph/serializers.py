@@ -20,12 +20,13 @@ class EdgeSerializer(serializers.ModelSerializer):
 
 
 class GraphSerializer(serializers.ModelSerializer):
-    # nodes = NodeSerializer(many=True)
-    # edges = EdgeSerializer(many=True)
+    queryset = Graph.objects.all()
+    nodes = NodeSerializer(many=True)
+    edges = EdgeSerializer(many=True)
 
     class Meta:
         model = Graph
-        fields = '__all__'
+        fields = ('title', 'nodes', 'edges')
 
     # def create(self, validated_data):
     #     node_data = validated_data.pop('node')

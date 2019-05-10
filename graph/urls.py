@@ -9,7 +9,8 @@ urlpatterns = [
     path('nodes/', views.NodeList.as_view()),
     path('nodes/<int:pk>/', views.NodeDetail.as_view()),
     path('edges/', views.EdgeList.as_view()),
-    path('edges/<int:pk>/', views.EdgeDetail.as_view())
+    path('edges/<int:pk>/', views.EdgeDetail.as_view()),
+    path('graphs/<int:graph_pk>/weakly_connected/', views.WeaklyConnectedList.as_view())
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

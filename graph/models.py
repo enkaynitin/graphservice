@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Create your models here.
@@ -9,6 +10,10 @@ class Graph(models.Model):
 
     def __str__(self):
         return "{}".format(self.title)
+
+
+    def islands(self):
+        nodes = self.nodes.all()
 
 
 class Node(models.Model):
@@ -28,16 +33,33 @@ class Node(models.Model):
             'right': self.right
         }
 
+    def weakly_connected(self):
+        edges = Edge.objects.filter(Q(source=self) | Q(target=self))
+        if len(edges) == 0:
+            return True
+        for edge in edges:
+            if edge.weight > 0.5:
+                return False
+        return True
+
     def __str__(self):
         return "{} {}".format(self.iid, self.title)
 
 
 class Edge(models.Model):
+    graph = models.ForeignKey(Graph, related_name='edges', on_delete=models.CASCADE, null=True)
     source = models.ForeignKey(Node, on_delete=models.CASCADE, related_name='node_source', null=True)
     target = models.ForeignKey(Node, on_delete=models.CASCADE, related_name='node_target', null=True)
     weight = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(1)])
 
     def __str__(self):
         return "{} {} {}".format(self.source, self.target, self.weight)
+
+
+
+class FindIsland(models.Model):
+    nodes_to_traverse = models.ManyToManyField(Node, related_name='to_travers')
+    traversed_nodes = models.ManyToManyField(Node, related_name='traversed')
+
 
 
