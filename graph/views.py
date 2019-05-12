@@ -5,12 +5,10 @@ from .serializers import GraphSerializer, NodeSerializer, EdgeSerializer, FileSe
 from rest_framework import generics
 from django.shortcuts import get_object_or_404
 from rest_framework import views, viewsets
-from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
-import os
-from graphservice.settings import ENV_PATH
+
 # Create your views here.
 
 
@@ -74,7 +72,10 @@ class FileView(views.APIView):
 
 
 
+class BoundingRectangle(views.APIView):
+    queryset = Node.objects.all()
+    serializers_class = NodeSerializer
 
-
-
-
+    # def islands(request, graph_pk):
+    # graph = get_object_or_404(Graph, pk=request.data.graph_pk)
+    # return graph.islands()

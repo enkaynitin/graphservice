@@ -82,6 +82,17 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'graphs',
+#         'USER': 'graphservice',
+#         'PASSWORD': 'servicegraph',
+#         'HOST': 'db',
+#         'PORT': 5432,
+#     }
+# }
+
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
