@@ -37,10 +37,11 @@ class Graph(models.Model):
          or destination having node belonging to the graph nodes.
         """
         edges = Edge.objects.none()
-        for node in self.nodes.all():
+        for node in self.nodes.all().iterator(chunk_size=100):
             filered_edges = Edge.objects.filter(Q(source=node) | Q(target=node))
             edges = set(chain(edges, filered_edges))
         return edges
+
 
 class Node(models.Model):
 

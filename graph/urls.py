@@ -11,9 +11,10 @@ urlpatterns = [
     path('nodes/<int:pk>/', views.NodeDetail.as_view()),
     path('edges/', views.EdgeList.as_view()),
     path('edges/<int:pk>/', views.EdgeDetail.as_view()),
-    path('graphs/<int:graph_pk>/weakly_connected/', views.WeaklyConnectedList.as_view()),
-    path('graphs/upload/', views.FileView.as_view())
-
+    path('graphs/<int:graph_pk>/weakly-connected/', views.WeaklyConnectedList.as_view()),
+    path('graphs/upload/', views.FileUploadView.as_view()),
+    path('graphs/<int:graph_pk>/bounding-rectangle-incoming-nodes/',
+         views.nodes_incoming_edge_from_source_overlap_by_rectangle, name='rectangle'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

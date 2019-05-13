@@ -46,7 +46,7 @@ class FileSerializer(serializers.ModelSerializer):
         fields = ('file', 'timestamp', 'graph')
 
 
-class BoundingRectagle(serializers.Serializer):
+class BoundingRectagleAndGraphSerializer(serializers.Serializer):
     top = serializers.FloatField()
     left = serializers.FloatField()
     bottom = serializers.FloatField()
