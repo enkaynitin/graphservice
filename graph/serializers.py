@@ -43,7 +43,8 @@ class GraphSerializer(serializers.ModelSerializer):
 class FileSerializer(serializers.ModelSerializer):
     class Meta():
         model = File
-        fields = ('file', 'timestamp', 'graph')
+        fields = ('file', 'timestamp', 'title')
+
 
 
 class BoundingRectagleAndGraphSerializer(serializers.Serializer):

@@ -8,7 +8,7 @@ from django.db.models.query import QuerySet
 
 
 class Graph(models.Model):
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=50)
 
     def __str__(self):
         return "{}".format(self.title)
@@ -92,7 +92,7 @@ class NodeTraversal(models.Model):
 
 class File(models.Model):
 
-    graph = models.ForeignKey(Graph, on_delete=models.CASCADE)
+    title = models.CharField(max_length=50, null=True)
     file = models.FileField(upload_to='media', blank=False, null=False)
     timestamp = models.DateTimeField(auto_now_add=True)
 

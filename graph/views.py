@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import  viewsets
-from .models import Graph, Node, Edge, File
+from .models import Graph, Node, Edge, File, NodeTraversal
 from .serializers import GraphSerializer, NodeSerializer, EdgeSerializer, FileSerializer, BoundingRectagleAndGraphSerializer
 from rest_framework import generics
 from django.shortcuts import get_object_or_404
@@ -45,6 +45,71 @@ class GraphDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = GraphSerializer
 
 
+class IslandsList(generics.ListAPIView):
+    serializer_class = NodeSerializer
+
+    def get_queryset(self):
+        """
+        traversed_nodes = []
+nodes_to_traverse = []
+initialize traversed_nodes with any node
+i.e. traversed_nodes = [v1]
+
+
+nodes_to_traverse=[v1]
+traversed_nodes = []
+2nd step
+traversed_nodes = [v1]
+nodes_to_traverse=[nodes_connected_to_v1] + nodes_to_traverse
+you can use this line to get the first element at each step
+ele, nodes_to_traverse = nodes_to_traverse[0] + nodes_to_traverse[1:]
+if nodes_to_traverse is empty
+algo has finished
+you have found one disjoint set
+then you mark in database that these nodes are traversed
+and re-initialise with a new node that has yet not been traversed to get the 2nd disjoint set
+and so on and so on
+this will give you all disjoint set
+
+
+
+1) Initialize all vertices as not visited.
+2) Do following for every vertex 'v'.
+       (a) If 'v' is not visited before, call DFSUtil(v)
+       (b) Print new line character
+
+DFSUtil(v)
+1) Mark 'v' as visited.
+2) Print 'v'
+3) Do following for every adjacent 'u' of 'v'.
+     If 'u' is not visited, then recursively call DFSUtil(u)
+
+        :return:
+        """
+        graph = get_object_or_404(Graph, pk=self.kwargs['graph_pk'])
+        node_traversal = NodeTraversal.object.create()
+        node_traversal.traversed_nodes = Node.objects.none()
+        node_traversal.nodes_to_traverse = Node.objects.none()
+        nodes = graph.nodes.all()
+        node_traversal.nodes_to_traverse = set(chain(node_traversal.nodes_to_traverse,
+                                                     self.connected_nodes(node_traversal.nodes_to_traverse)))
+
+    @staticmethod
+    def connected_nodes(node):
+        node_connected_to = Node.object.none()
+        for e in Edge.objects.filter(Q(source=node) | Q(target=node)):
+            if e.source == node:
+                node_connected_to = set(chain(node_connected_to, Node.objects.filter(pk=e.target.pk)))
+            else:
+                node_connected_to = set(chain(node_connected_to, Node.objects.filter(pk=e.source.pk)))
+        return node_connected_to
+
+
+
+
+
+
+
 class WeaklyConnectedList(generics.ListAPIView):
     serializer_class = NodeSerializer
 
@@ -61,7 +126,7 @@ class FileUploadView(views.APIView):
         if file_serializer.is_valid():
             file_serializer.save()
             file_object = File.objects.last()
-            graph = file_object.graph
+            graph = get_object_or_404(Graph, title=file_object.title)
             with open('/home/nk/Projects/mavenoid/graphservice/graphservice'+file_object.file.url, 'r') as f:
                 for line in f:
                     l = line.replace("\n", "").split(',')
@@ -104,6 +169,5 @@ def nodes_incoming_edge_from_source_overlap_by_rectangle(request, *args, **kwarg
     serializer = NodeSerializer(node_with_incoming_edge_with_source_overlapping_rectaangle, many=True)
     return Response(serializer.data)
 
-    # def islands(request, graph_pk):
-    # graph = get_object_or_404(Graph, pk=request.data.graph_pk)
-    # return graph.islands()
+
+
