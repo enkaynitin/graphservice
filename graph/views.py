@@ -142,14 +142,10 @@ def islands(request, *args, **kwargs):
             start_node = unexplored[0]
         else:
             start_node = None
-    print("**************** \n",islands)
     island_list = []
     for island in islands:
-        island_nodes = island.values()
-        island_node_list = list(island_nodes)
-        island_list.append(island_node_list)
-    #str = json.dumps([NodeSerializer(islands, many=True).data])
-    return Response(json.dumps(island_list))
+        island_list += ([NodeSerializer(island, many=True).data])
+    return Response(island_list)
 
 
 def connected_nodes(node):
