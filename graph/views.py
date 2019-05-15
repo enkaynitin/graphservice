@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from rest_framework import  viewsets
 from .models import Graph, Node, Edge, File, NodeTraversal
-from .serializers import GraphSerializer, NodeSerializer, EdgeSerializer, FileSerializer, BoundingRectagleAndGraphSerializer
+from .serializers import GraphSerializer, NodeSerializer, EdgeSerializer,\
+    FileSerializer
 from rest_framework import generics
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, HttpResponse
 from rest_framework import views, viewsets
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -11,6 +12,8 @@ from rest_framework import status
 from itertools import chain
 from rest_framework.decorators import api_view
 from django.db.models import Q
+import json
+from django.http import JsonResponse
 
 # Create your views here.
 
@@ -45,69 +48,119 @@ class GraphDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = GraphSerializer
 
 
-class IslandsList(generics.ListAPIView):
-    serializer_class = NodeSerializer
-
-    def get_queryset(self):
-        """
-        traversed_nodes = []
-nodes_to_traverse = []
-initialize traversed_nodes with any node
-i.e. traversed_nodes = [v1]
-
-
-nodes_to_traverse=[v1]
-traversed_nodes = []
-2nd step
-traversed_nodes = [v1]
-nodes_to_traverse=[nodes_connected_to_v1] + nodes_to_traverse
-you can use this line to get the first element at each step
-ele, nodes_to_traverse = nodes_to_traverse[0] + nodes_to_traverse[1:]
-if nodes_to_traverse is empty
-algo has finished
-you have found one disjoint set
-then you mark in database that these nodes are traversed
-and re-initialise with a new node that has yet not been traversed to get the 2nd disjoint set
-and so on and so on
-this will give you all disjoint set
-
-
-
-1) Initialize all vertices as not visited.
-2) Do following for every vertex 'v'.
-       (a) If 'v' is not visited before, call DFSUtil(v)
-       (b) Print new line character
-
-DFSUtil(v)
-1) Mark 'v' as visited.
-2) Print 'v'
-3) Do following for every adjacent 'u' of 'v'.
-     If 'u' is not visited, then recursively call DFSUtil(u)
-
-        :return:
-        """
-        graph = get_object_or_404(Graph, pk=self.kwargs['graph_pk'])
-        node_traversal = NodeTraversal.object.create()
-        node_traversal.traversed_nodes = Node.objects.none()
-        node_traversal.nodes_to_traverse = Node.objects.none()
-        nodes = graph.nodes.all()
-        node_traversal.nodes_to_traverse = set(chain(node_traversal.nodes_to_traverse,
-                                                     self.connected_nodes(node_traversal.nodes_to_traverse)))
-
-    @staticmethod
-    def connected_nodes(node):
-        node_connected_to = Node.object.none()
-        for e in Edge.objects.filter(Q(source=node) | Q(target=node)):
-            if e.source == node:
-                node_connected_to = set(chain(node_connected_to, Node.objects.filter(pk=e.target.pk)))
-            else:
-                node_connected_to = set(chain(node_connected_to, Node.objects.filter(pk=e.source.pk)))
-        return node_connected_to
-
-
+# class Islands(generics.ListAPIView):
+#     serializer_class = NodeListSerializer(child=NodeSerializer, many=True)
+#
+#     # def get_serializer(self, request, *args, **kwargs):
+#     #     if self.request.method.lower() == 'get':
+#     #         data = kwargs.get('data')
+#     #         kwargs['many'] = isinstance(data, list)
+#     #     return super(Islands, self).get_serializer(*args, **kwargs)
+#
+#     def get_queryset(self):
+#
+#         graph = get_object_or_404(Graph, pk=self.kwargs['graph_pk'])
+#         node_traversal = NodeTraversal.objects.create()
+#         # node_traversal.traversed_nodes = set(chain(Node.objects.none(), Node.objects.none()))
+#         # node_traversal.nodes_to_traverse = Node.objects.none()
+#         islands = []
+#
+#         start_node = graph.nodes.all()[0]
+#         while start_node:
+#             print(connected_nodes(start_node))
+#             node_traversal.nodes_to_traverse.set(set(chain(node_traversal.nodes_to_traverse.all(),
+#                                                          connected_nodes(start_node))))
+#             node_traversal.traversed_nodes.set(set(chain(node_traversal.traversed_nodes.all(),
+#                                                          graph.nodes.filter(pk=start_node.pk))))
+#             while len(node_traversal.nodes_to_traverse.all()) is not 0 :
+#                 for node in node_traversal.nodes_to_traverse.all():
+#
+#                     node_traversal.nodes_to_traverse.set(set(chain(node_traversal.nodes_to_traverse.all(),
+#                                                                  connected_nodes(node))))
+#                     node_traversal.nodes_to_traverse.get(pk=node.pk).delete()
+#                     if node not in node_traversal.traversed_nodes.all():
+#                         node_traversal.traversed_nodes.set(set(
+#                             chain(node_traversal.traversed_nodes.all(), graph.nodes.filter(pk=node.pk))))
+#             islands.append(node_traversal.traversed_nodes.all())
+#             explored = Node.objects.none()
+#             for island in islands:
+#                 expolored = explored.union(island)
+#             unexplored = graph.nodes.all().difference(expolored)
+#             if unexplored:
+#                 start_node = unexplored[0]
+#             else:
+#                 start_node = None
+#         print("**************** \n",islands)
+#         island_list = []
+#         for island in islands:
+#             island_nodes = island.values()
+#             island_node_list = list(island_nodes)
+#             island_list.append(island_node_list)
+#         #str = json.dumps([NodeSerializer(islands, many=True).data])
+#         #serializer = NodeListSerializer(islands)
+#         #return Response(json.dumps(island_list))
+#         serializer = NodeListSerializer(islands)
+#         return Response(serializer.data)
+#
+#     # def list(self, request,*args, **kwargs ):
+#     #     queryset = self.get_queryset(request, *args, **kwargs)
+#     #     serializer = NodeListSerializer(queryset, many=True)
+#     #     return Response(serializer.data)
 
 
+@api_view(['GET'])
+def islands(request, *args, **kwargs):
 
+    graph = get_object_or_404(Graph, pk=kwargs['graph_pk'])
+    node_traversal = NodeTraversal.objects.create()
+    # node_traversal.traversed_nodes = set(chain(Node.objects.none(), Node.objects.none()))
+    # node_traversal.nodes_to_traverse = Node.objects.none()
+    islands = []
+
+    start_node = graph.nodes.all()[0]
+    while start_node:
+        print(connected_nodes(start_node))
+        node_traversal.nodes_to_traverse.set(set(chain(node_traversal.nodes_to_traverse.all(),
+                                                     connected_nodes(start_node))))
+        node_traversal.traversed_nodes.set(set(chain(node_traversal.traversed_nodes.all(),
+                                                     graph.nodes.filter(pk=start_node.pk))))
+        while len(node_traversal.nodes_to_traverse.all()) is not 0 :
+            for node in node_traversal.nodes_to_traverse.all():
+
+                node_traversal.nodes_to_traverse.set(set(chain(node_traversal.nodes_to_traverse.all(),
+                                                             connected_nodes(node))))
+                node_traversal.nodes_to_traverse.get(pk=node.pk).delete()
+                if node not in node_traversal.traversed_nodes.all():
+                    node_traversal.traversed_nodes.set(set(
+                        chain(node_traversal.traversed_nodes.all(), graph.nodes.filter(pk=node.pk))))
+        islands.append(node_traversal.traversed_nodes.all())
+        explored = Node.objects.none()
+        for island in islands:
+            expolored = explored.union(island)
+        unexplored = graph.nodes.all().difference(expolored)
+        if unexplored:
+            start_node = unexplored[0]
+        else:
+            start_node = None
+    print("**************** \n",islands)
+    island_list = []
+    for island in islands:
+        island_nodes = island.values()
+        island_node_list = list(island_nodes)
+        island_list.append(island_node_list)
+    #str = json.dumps([NodeSerializer(islands, many=True).data])
+    return Response(json.dumps(island_list))
+
+
+def connected_nodes(node):
+    node_connected_to = Node.objects.none()
+    for e in Edge.objects.filter(Q(source=node) | Q(target=node)):
+        if e.source == node:
+            node_connected_to = set(chain(node_connected_to, Node.objects.filter(pk=e.target.pk)))
+        else:
+            node_connected_to = set(chain(node_connected_to, Node.objects.filter(pk=e.source.pk)))
+    print(type(node_connected_to))
+    return node_connected_to
 
 
 class WeaklyConnectedList(generics.ListAPIView):
@@ -164,7 +217,8 @@ def nodes_incoming_edge_from_source_overlap_by_rectangle(request, *args, **kwarg
         edge_with_source_node_overlapped = Edge.objects.filter(source=node)
         for edge in edge_with_source_node_overlapped:
             node_with_incoming_edge_with_source_overlapping_rectaangle\
-                = set(chain(node_with_incoming_edge_with_source_overlapping_rectaangle, Node.objects.filter(pk=edge.target.pk)))
+                = set(chain(node_with_incoming_edge_with_source_overlapping_rectaangle,
+                            Node.objects.filter(pk=edge.target.pk)))
 
     serializer = NodeSerializer(node_with_incoming_edge_with_source_overlapping_rectaangle, many=True)
     return Response(serializer.data)

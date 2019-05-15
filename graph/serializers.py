@@ -3,12 +3,14 @@ from .models import Graph, Node,  Edge, File
 from rest_framework.parsers import JSONParser
 
 
+
+
 class NodeSerializer(serializers.ModelSerializer):
     queryset = Node.objects.all()
 
     class Meta:
         model = Node
-        fields = ('iid', 'title', 'position')
+        fields = ('iid', 'title', 'top', 'left', 'bottom', 'right', 'position')
 
 
 class EdgeSerializer(serializers.ModelSerializer):
@@ -46,10 +48,13 @@ class FileSerializer(serializers.ModelSerializer):
         fields = ('file', 'timestamp', 'title')
 
 
-
 class BoundingRectagleAndGraphSerializer(serializers.Serializer):
+
     top = serializers.FloatField()
     left = serializers.FloatField()
     bottom = serializers.FloatField()
     right = serializers.FloatField()
     graph = serializers.IntegerField()
+
+
+

@@ -2,7 +2,6 @@ from django.db import models
 from django.db.models import Q
 from django.core.validators import MaxValueValidator, MinValueValidator
 from itertools import chain
-from django.db.models.query import QuerySet
 
 # Create your models here.
 
@@ -12,24 +11,6 @@ class Graph(models.Model):
 
     def __str__(self):
         return "{}".format(self.title)
-
-
-    # def islands(self, vertices_encountered = None, start_node=None):
-    #     """ determines connected nodes """
-    #     if vertices_encountered is None:
-    #         vertices_encountered = set()
-    #     nodes = self.nodes.all()
-    #     if not start_node:
-    #         """choose a node from graph as a starting point"""
-    #         start_node = nodes[0]
-    #     vertices_encountered.add(start_node)
-    #     start_node = nodes[0]
-    #     node_traversal = NodeTraversal()
-    #     node_traversed.add(nodes_to_traverse)
-    #     edges = Edge.objects.filter(Q(source=nodes_to_traverse[1:]))
-    #     def nodes_connected_to_a_node(node):
-    #         return
-    #     nodes_to_traverse = [nodes_connected_to]
 
     def edges(self):
         """get edges for the graph object.
