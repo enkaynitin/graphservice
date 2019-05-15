@@ -48,68 +48,8 @@ class GraphDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = GraphSerializer
 
 
-# class Islands(generics.ListAPIView):
-#     serializer_class = NodeListSerializer(child=NodeSerializer, many=True)
-#
-#     # def get_serializer(self, request, *args, **kwargs):
-#     #     if self.request.method.lower() == 'get':
-#     #         data = kwargs.get('data')
-#     #         kwargs['many'] = isinstance(data, list)
-#     #     return super(Islands, self).get_serializer(*args, **kwargs)
-#
-#     def get_queryset(self):
-#
-#         graph = get_object_or_404(Graph, pk=self.kwargs['graph_pk'])
-#         node_traversal = NodeTraversal.objects.create()
-#         # node_traversal.traversed_nodes = set(chain(Node.objects.none(), Node.objects.none()))
-#         # node_traversal.nodes_to_traverse = Node.objects.none()
-#         islands = []
-#
-#         start_node = graph.nodes.all()[0]
-#         while start_node:
-#             print(connected_nodes(start_node))
-#             node_traversal.nodes_to_traverse.set(set(chain(node_traversal.nodes_to_traverse.all(),
-#                                                          connected_nodes(start_node))))
-#             node_traversal.traversed_nodes.set(set(chain(node_traversal.traversed_nodes.all(),
-#                                                          graph.nodes.filter(pk=start_node.pk))))
-#             while len(node_traversal.nodes_to_traverse.all()) is not 0 :
-#                 for node in node_traversal.nodes_to_traverse.all():
-#
-#                     node_traversal.nodes_to_traverse.set(set(chain(node_traversal.nodes_to_traverse.all(),
-#                                                                  connected_nodes(node))))
-#                     node_traversal.nodes_to_traverse.get(pk=node.pk).delete()
-#                     if node not in node_traversal.traversed_nodes.all():
-#                         node_traversal.traversed_nodes.set(set(
-#                             chain(node_traversal.traversed_nodes.all(), graph.nodes.filter(pk=node.pk))))
-#             islands.append(node_traversal.traversed_nodes.all())
-#             explored = Node.objects.none()
-#             for island in islands:
-#                 expolored = explored.union(island)
-#             unexplored = graph.nodes.all().difference(expolored)
-#             if unexplored:
-#                 start_node = unexplored[0]
-#             else:
-#                 start_node = None
-#         print("**************** \n",islands)
-#         island_list = []
-#         for island in islands:
-#             island_nodes = island.values()
-#             island_node_list = list(island_nodes)
-#             island_list.append(island_node_list)
-#         #str = json.dumps([NodeSerializer(islands, many=True).data])
-#         #serializer = NodeListSerializer(islands)
-#         #return Response(json.dumps(island_list))
-#         serializer = NodeListSerializer(islands)
-#         return Response(serializer.data)
-#
-#     # def list(self, request,*args, **kwargs ):
-#     #     queryset = self.get_queryset(request, *args, **kwargs)
-#     #     serializer = NodeListSerializer(queryset, many=True)
-#     #     return Response(serializer.data)
-
-
 @api_view(['GET'])
-def islands(request, *args, **kwargs):
+def get_islands(request, *args, **kwargs):
     """
     Returns list of nodes that form an island, and the position of the bounding rectangle
     :param request:
@@ -117,50 +57,49 @@ def islands(request, *args, **kwargs):
     :param kwargs: primary key of graph
     :return:
     """
-
     graph = get_object_or_404(Graph, pk=kwargs['graph_pk'])
-    node_traversal = NodeTraversal.objects.create()
-    node_traversal.traversed_nodes.set(Node.objects.none())
-    node_traversal.nodes_to_traverse.set(Node.objects.none())
     # node_traversal.traversed_nodes = set(chain(Node.objects.none(), Node.objects.none()))
     # node_traversal.nodes_to_traverse = Node.objects.none()
     islands = []
 
     start_node = graph.nodes.all()[0]
     explored = Node.objects.none()
-    print("type connected nodes", type(connected_nodes(start_node)))
 
-    while start_node is not None:
+    while start_node:
+        node_traversal = NodeTraversal.objects.create()
         node_traversal.traversed_nodes.set(Node.objects.none())
         node_traversal.nodes_to_traverse.set(Node.objects.none())
-        print("Connected Nodes:", connected_nodes(start_node))
         node_traversal.nodes_to_traverse.set(set(chain(node_traversal.nodes_to_traverse.all(),
                                                      connected_nodes(start_node))))
         node_traversal.traversed_nodes.set(set(chain(node_traversal.traversed_nodes.all(),
                                                      graph.nodes.filter(pk=start_node.pk))))
-        while len(node_traversal.nodes_to_traverse.all()) is not 0 :
+        while node_traversal.nodes_to_traverse.all().count() is not 0 :
             for node in node_traversal.nodes_to_traverse.all():
 
                 node_traversal.nodes_to_traverse.set(node_traversal.nodes_to_traverse.union(connected_nodes(node)))
                 node_traversal.nodes_to_traverse.set(node_traversal.nodes_to_traverse.all().difference(
                     node_traversal.traversed_nodes.filter(pk=node.pk)))
                 if node not in node_traversal.traversed_nodes.all():
-                    node_traversal.traversed_nodes.set(node_traversal.traversed_nodes.all().union(graph.nodes.filter(pk=node.pk)))
-        islands.append(node_traversal.traversed_nodes.all())
-        print("traversed nodes: ", node_traversal.traversed_nodes.all())
-        print(island)
+                    node_traversal.traversed_nodes.set(
+                        node_traversal.traversed_nodes.all().union(graph.nodes.filter(pk=node.pk)))
+        island = (node_traversal.traversed_nodes.all())
+        islands.append(island)
         for island in islands:
-            expolored = explored.union(island)
-        unexplored = graph.nodes.all().difference(expolored)
-        if len(unexplored) == 0:
+            explored = (explored.union(island))
+        unexplored = graph.nodes.all().difference(explored)
+        if unexplored.count() == 0:
             start_node = None
         else:
             start_node = unexplored[0]
 
 
+
     island_list = []
     for island in islands:
-        print("Islands", island)
+        """
+        Bounding Rectanngle is being located here. 
+        """
+        print("Island :", island)
         bounding_rectangle = {
             'top': island.aggregate(Max('top'))['top__max'],
             'left': island.aggregate(Max('left'))['left__max'],
@@ -176,7 +115,7 @@ def connected_nodes(node):
     node_connected_to = Node.objects.none()
     for e in Edge.objects.filter(Q(source=node) | Q(target=node)):
         if e.source == node:
-            node_connected_to = node_connected_to.unioin(Node.objects.filter(pk=e.target.pk))
+            node_connected_to = node_connected_to.union(Node.objects.filter(pk=e.target.pk))
         else:
             node_connected_to = node_connected_to.union(Node.objects.filter(pk=e.target.pk))
     return node_connected_to
