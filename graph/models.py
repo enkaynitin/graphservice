@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.core.validators import MaxValueValidator, MinValueValidator
 from itertools import chain
 
@@ -43,13 +43,12 @@ class Node(models.Model):
         }
 
     def weakly_connected(self):
-        edges = Edge.objects.filter(Q(source=self) | Q(target=self))
-        if len(edges) == 0:
-            return True
-        for edge in edges:
-            if edge.weight > 0.5:
-                return False
-        return True
+        edges = Edge.objects.filter(Q(target=self))
+        if edges.count()>0:
+            if edges.aggregate(Max('weight'))['weight__max']< 0.5:
+                return True
+        else:
+            return False
 
     def __str__(self):
         return "{} {}".format(self.iid, self.title)
@@ -69,6 +68,7 @@ class NodeTraversal(models.Model):
 
     nodes_to_traverse = models.ManyToManyField(Node, related_name='to_travers')
     traversed_nodes = models.ManyToManyField(Node, related_name='traversed')
+    connected_nodes  = models.ManyToManyField(Node, related_name='connected')
 
 
 class File(models.Model):
