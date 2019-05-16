@@ -68,7 +68,6 @@ class NodeTraversal(models.Model):
 
     nodes_to_traverse = models.ManyToManyField(Node, related_name='to_travers')
     traversed_nodes = models.ManyToManyField(Node, related_name='traversed')
-    connected_nodes  = models.ManyToManyField(Node, related_name='connected')
 
 
 class File(models.Model):
