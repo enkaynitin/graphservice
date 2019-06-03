@@ -112,12 +112,16 @@ def get_islands(request, *args, **kwargs):
 
 
 def connected_nodes(node):
+    """
+    Returns node connected to a node
+    :param node: node in question
+    :return: connected to the node in question
+    """
     node_connected_to = Node.objects.none()
     for e in Edge.objects.filter(Q(source=node) | Q(target=node)):
         if e.source == node:
             node_connected_to = node_connected_to.union(Node.objects.filter(pk=e.target.pk))
-        else:
-            node_connected_to = node_connected_to.union(Node.objects.filter(pk=e.target.pk))
+
     return node_connected_to
 
 
@@ -157,7 +161,7 @@ class FileUploadView(views.APIView):
 
 
 @api_view(['POST'])
-def nodes_incoming_edge_from_source_overlap_by_rectangle(request, *args, **kwargs):
+def nodes_with_incoming_edge_from_source_node_overlapped_by_rectangle(request, *args, **kwargs):
     """
     Given a rectangle specified in the request and a graph identifier, returns all nodes that have
     an incoming edge whose source node overlaps with that rectangle
@@ -172,20 +176,20 @@ def nodes_incoming_edge_from_source_overlap_by_rectangle(request, *args, **kwarg
     bottom = float(request.data['bottom'])
     right = float(request.data['right'])
     all_overlapping_nodes = graph.nodes.filter(
-        top__gte=top,
-        left__gte=left,
-        bottom__gte=bottom,
-        right__gte=right
-    )
-    node_with_incoming_edge_with_source_overlapping_rectaangle = Node.objects.none()
+        top__lte=top,
+        left__lte=left,
+        bottom__lte=bottom,
+        right__lte=right
+    )                                # This will filter all nodes that are inside the given rectangle
+    node_with_incoming_edge = Node.objects.none()     # empty queryset initialized
     for node in all_overlapping_nodes.iterator():
-        edge_with_source_node_overlapped = Edge.objects.filter(source=node)
+        edge_with_source_node_overlapped = Edge.objects.filter(source=node)  # filter all edges from a node in all overlapping nodes
         for edge in edge_with_source_node_overlapped:
-            node_with_incoming_edge_with_source_overlapping_rectaangle\
-                = set(chain(node_with_incoming_edge_with_source_overlapping_rectaangle,
-                            Node.objects.filter(pk=edge.target.pk)))
+            node_with_incoming_edge\
+                = set(chain(node_with_incoming_edge,
+                            Node.objects.filter(pk=edge.target.pk)))        # filters required node having incoming edge from node
 
-    serializer = NodeSerializer(node_with_incoming_edge_with_source_overlapping_rectaangle, many=True)
+    serializer = NodeSerializer(node_with_incoming_edge, many=True)
     return Response(serializer.data)
 
 

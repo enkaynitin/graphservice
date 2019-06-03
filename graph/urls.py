@@ -14,7 +14,7 @@ urlpatterns = [
     path('graphs/<int:graph_pk>/weakly-connected/', views.WeaklyConnectedList.as_view()),
     path('graphs/upload/', views.FileUploadView.as_view()),
     path('graphs/<int:graph_pk>/bounding-rectangle-incoming-nodes/',
-         views.nodes_incoming_edge_from_source_overlap_by_rectangle, name='rectangle'),
+         views.nodes_with_incoming_edge_from_source_node_overlapped_by_rectangle, name='rectangle'),
     path('graphs/<int:graph_pk>/islands/', views.get_islands, name='islands'),
 ]
 

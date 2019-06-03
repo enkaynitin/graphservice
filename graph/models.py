@@ -60,6 +60,7 @@ class Edge(models.Model):
     target = models.ForeignKey(Node, on_delete=models.CASCADE, related_name='node_target', null=True)
     weight = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(1)])
 
+
     def __str__(self):
         return "{} {} {}".format(self.source, self.target, self.weight)
 
