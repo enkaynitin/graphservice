@@ -15,7 +15,7 @@ urlpatterns = [
     path('graphs/upload/', views.FileUploadView.as_view()),
     path('graphs/<int:graph_pk>/bounding-rectangle-incoming-nodes/',
          views.nodes_with_incoming_edge_from_source_node_overlapped_by_rectangle, name='rectangle'),
-    path('graphs/<int:graph_pk>/islands/', views.get_islands, name='islands'),
+    path('graphs/<int:graph_pk>/groups/', views.get_groups, name='groups'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

@@ -49,7 +49,7 @@ class GraphDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 @api_view(['GET'])
-def get_islands(request, *args, **kwargs):
+def get_groups(request, *args, **kwargs):
     """
     Returns list of nodes that form an island, and the position of the bounding rectangle
     :param request:
@@ -60,7 +60,7 @@ def get_islands(request, *args, **kwargs):
     graph = get_object_or_404(Graph, pk=kwargs['graph_pk'])
     # node_traversal.traversed_nodes = set(chain(Node.objects.none(), Node.objects.none()))
     # node_traversal.nodes_to_traverse = Node.objects.none()
-    islands = []
+    groups = []
 
     start_node = graph.nodes.all()[0]
     explored = Node.objects.none()
@@ -82,10 +82,10 @@ def get_islands(request, *args, **kwargs):
                 if node not in node_traversal.traversed_nodes.all():
                     node_traversal.traversed_nodes.set(
                         node_traversal.traversed_nodes.all().union(graph.nodes.filter(pk=node.pk)))
-        island = (node_traversal.traversed_nodes.all())
-        islands.append(island)
-        for island in islands:
-            explored = (explored.union(island))
+        group = (node_traversal.traversed_nodes.all())
+        groups.append(group)
+        for group in groups:
+            explored = (explored.union(group))
         unexplored = graph.nodes.all().difference(explored)
         if unexplored.count() == 0:
             start_node = None
@@ -94,21 +94,20 @@ def get_islands(request, *args, **kwargs):
 
 
 
-    island_list = []
-    for island in islands:
+    group_list = []
+    for group in groups:
         """
         Bounding Rectanngle is being located here. 
         """
-        print("Island :", island)
         bounding_rectangle = {
-            'top': island.aggregate(Max('top'))['top__max'],
-            'left': island.aggregate(Max('left'))['left__max'],
-            'bottom': island.aggregate(Max('bottom'))['bottom__max'],
-            'right': island.aggregate(Max('right'))['right__max'],
+            'top': group.aggregate(Max('top'))['top__max'],
+            'left': group.aggregate(Max('left'))['left__max'],
+            'bottom': group.aggregate(Max('bottom'))['bottom__max'],
+            'right': group.aggregate(Max('right'))['right__max'],
             }
 
-        island_list += ([NodeSerializer(island, many=True).data]) + [(bounding_rectangle)]
-    return Response(island_list)
+        group_list += ([NodeSerializer(group, many=True).data]) + [(bounding_rectangle)]
+    return Response(group_list)
 
 
 def connected_nodes(node):
